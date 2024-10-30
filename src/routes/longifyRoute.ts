@@ -7,7 +7,7 @@ router.get("/:shortCode", async (req: Request, res: Response) => {
   const shortCode = req.params.shortCode;
   const originalUrl = await FirebaseProvider.getOriginalUrl(shortCode);
   if (originalUrl != null) {
-    res.status(200).json({ originalURL: originalUrl });
+    res.redirect(originalUrl);
   } else {
     res.status(400).send({ message: "Failed to find Original URL" });
   }

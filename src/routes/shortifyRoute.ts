@@ -10,16 +10,26 @@ router.post("/shortify", async (req: Request, res: Response) => {
     res.status(400).json({ error: "URL is required" });
     return;
   }
-  const shortCode: string = generateHash(url);
+  const shortCode: string = await generateHash(url);
   await FirebaseProvider.saveURLMapping(shortCode, url);
   res.json({
     code: shortCode,
   });
 });
 
-const generateHash = (url: string): string => {
-  const hash: string = crypto.createHash("md5").update(url).digest("hex");
-  return hash.substring(0, 8);
+const generateHash = async (
+  url: string,
+  length: number = 8
+): Promise<string> => {
+  const urlBuffer = new TextEncoder().encode(url);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", urlBuffer);
+
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+
+  return hashHex.slice(0, length);
 };
 
 export default router;
